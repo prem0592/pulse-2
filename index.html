@@ -587,11 +587,30 @@ async function deleteMyAccount(){
  }catch(err){$("deleteAccountMsg").textContent=err.message||"Account deletion failed. Nothing was deleted.";btn.disabled=false;btn.textContent="Delete permanently"}
 }
 
+function getGreetingTime(){
+ const hour=new Date().getHours();
+ if(hour>=5&&hour<12)return {label:"morning",emoji:"👋"};
+ if(hour>=12&&hour<18)return {label:"afternoon",emoji:"☀️"};
+ return {label:"evening",emoji:"🌙"};
+}
+
+function updateGreeting(){
+ const el=$("greeting");
+ if(!el||!session)return;
+ const greetingName=profile?.display_name||session.user.email.split("@")[0];
+ const t=getGreetingTime();
+ el.innerHTML=`<span class="greetingHello">Good ${t.label} ${t.emoji}</span><span class="greetingName">${esc(greetingName)}</span>`;
+}
+
+function startGreetingClock(){
+ updateGreeting();
+ clearInterval(window.__pulseGreetingTimer);
+ window.__pulseGreetingTimer=setInterval(updateGreeting,60000);
+}
+
 function renderApp(){
  appShell();renderHome();renderExpenseList();
- const greetingName=profile?.display_name||session.user.email.split("@")[0];
- const greetingTime=new Date().getHours()<12?"morning":new Date().getHours()<18?"afternoon":"evening";
- $("greeting").innerHTML=`<span class="greetingHello">Good ${greetingTime} 👋</span><span class="greetingName">${esc(greetingName)}</span>`;
+ startGreetingClock();
  maybeShowOnboarding();
 }
 
